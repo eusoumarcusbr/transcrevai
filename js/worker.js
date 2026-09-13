@@ -17,12 +17,17 @@ import * as dz from './diarize.js?v=9';
 // ---------------------------------------------------------------------
 // Configuração do ONNX Runtime (arquivos .wasm servidos pelo próprio site)
 // ---------------------------------------------------------------------
+// A versão vai na URL dos arquivos do ONNX Runtime porque eles têm cache de 7
+// dias no .htaccess: sem isso, quem já visitou o site continua rodando o .wasm
+// antigo depois de uma atualização (foi o que escondeu a correção do q8).
+const ORT_VER = '9';
 const ORT_BASE = new URL('../vendor/ort/', import.meta.url).href;
 const IS_SAFARI = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 env.allowLocalModels = false;
+const ortUrl = (f) => `${ORT_BASE}${f}?v=${ORT_VER}`;
 env.backends.onnx.wasm.wasmPaths = IS_SAFARI
-  ? { mjs: ORT_BASE + 'ort-wasm-simd-threaded.mjs', wasm: ORT_BASE + 'ort-wasm-simd-threaded.wasm' }
-  : { mjs: ORT_BASE + 'ort-wasm-simd-threaded.asyncify.mjs', wasm: ORT_BASE + 'ort-wasm-simd-threaded.asyncify.wasm' };
+  ? { mjs: ortUrl('ort-wasm-simd-threaded.mjs'), wasm: ortUrl('ort-wasm-simd-threaded.wasm') }
+  : { mjs: ortUrl('ort-wasm-simd-threaded.asyncify.mjs'), wasm: ortUrl('ort-wasm-simd-threaded.asyncify.wasm') };
 env.backends.onnx.wasm.numThreads = self.crossOriginIsolated
   ? Math.max(1, Math.min(8, (navigator.hardwareConcurrency || 4) - 1))
   : 1;
