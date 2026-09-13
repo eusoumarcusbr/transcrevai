@@ -20,7 +20,17 @@
   <meta name="twitter:title" content="TranscrevAI: transcrição de vídeos, áudios e links">
   <meta name="twitter:description" content="Texto com timecode e separação de falantes. Tudo roda no seu navegador, sem enviar arquivo para servidor nenhum.">
   <meta name="twitter:image" content="https://eusoumarcus.com.br/transcrevai/og.png">
-  <link rel="stylesheet" href="css/app.css?v=7">
+  <!-- Google Analytics 4. O crossorigin é obrigatório: o site roda com
+       Cross-Origin-Embedder-Policy require-corp, que bloqueia script de outro
+       domínio carregado sem CORS. -->
+  <script async crossorigin="anonymous" src="https://www.googletagmanager.com/gtag/js?id=G-58MW9KB4N6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-58MW9KB4N6');
+  </script>
+  <link rel="stylesheet" href="css/app.css?v=8">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23E8341C'/%3E%3Cpath d='M16 34v-4M24 42V22M32 38V26M40 46V18M48 36v-8' stroke='white' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
 </head>
 <body>
@@ -186,6 +196,6 @@
 
   <div class="toast" id="toast" hidden></div>
 
-  <script type="module" src="js/app.js?v=7"></script>
+  <script type="module" src="js/app.js?v=8"></script>
 </body>
 </html>

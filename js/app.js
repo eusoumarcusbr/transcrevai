@@ -71,6 +71,13 @@ const fmtEta = (s) => {
 };
 const escapeHtml = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
+// Google Analytics: só eventos de uso (qualidade, origem, duração). Nunca vai
+// nome de arquivo, link completo nem uma palavra do texto transcrito.
+function track(name, params = {}) {
+  try { if (typeof window.gtag === 'function') window.gtag('event', name, params); } catch { /* ok */ }
+}
+const linkHost = (url) => { try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return 'outro'; } };
+
 function lsGet(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : v; } catch { return d; } }
 function lsSet(k, v) { try { localStorage.setItem(k, v); } catch { /* ok */ } }
 
@@ -273,6 +280,14 @@ async function start() {
   resetSteps(isLink);
   show('viewWork');
   validate();
+  track('transcricao_iniciada', {
+    origem: isLink ? 'link' : 'arquivo',
+    dominio: isLink ? linkHost(url) : 'arquivo',
+    qualidade: MODEL_UI[model].label,
+    motor: opts.device === 'webgpu' ? 'placa de video' : 'processador',
+    falantes: opts.speakers,
+    idioma: opts.language,
+  });
 
   try {
     let file = state.file;
@@ -426,6 +441,11 @@ function endBusy() {
 }
 
 function fail(message) {
+  track('transcricao_erro', {
+    motivo: String(message || '').slice(0, 90),
+    qualidade: state.run ? MODEL_UI[state.run.opts.model].label : 'desconhecida',
+    motor: state.run && state.run.opts.device === 'webgpu' ? 'placa de video' : 'processador',
+  });
   endBusy();
   state.run = null;
   show('viewInput');
@@ -433,6 +453,7 @@ function fail(message) {
 }
 
 function cancelled() {
+  track('transcricao_cancelada');
   endBusy();
   state.run = null;
   show('viewInput');
@@ -466,6 +487,13 @@ async function finish(m) {
     fail('Não saiu nenhum texto deste arquivo. Ele tem fala audível?');
     return;
   }
+  track('transcricao_concluida', {
+    qualidade: MODEL_UI[doc.model].label,
+    motor: run.opts.device === 'webgpu' ? 'placa de video' : 'processador',
+    duracao_s: Math.round(doc.duration || 0),
+    tempo_s: Math.round(m.elapsed || 0),
+    falantes_detectados: doc.diarized ? doc.speakers.length : 1,
+  });
   await saveDoc(doc);
   renderResult();
   show('viewResult');
@@ -617,6 +645,7 @@ function download(name, data, type) {
 
 async function exportAs(kind) {
   const doc = state.doc;
+  track('exportar', { formato: kind, duracao_s: Math.round(doc.duration || 0) });
   const base = safeFileName(doc.title);
   if (kind === 'txt') download(`${base}.txt`, toPlainText(doc), 'text/plain;charset=utf-8');
   if (kind === 'tc') download(`${base}_timecode.txt`, toTimecodeText(doc), 'text/plain;charset=utf-8');
@@ -694,6 +723,7 @@ function bind() {
   $('#btnExport').addEventListener('click', (e) => { e.stopPropagation(); menu.hidden = !menu.hidden; $('#btnExport').setAttribute('aria-expanded', !menu.hidden); });
   document.addEventListener('click', () => { menu.hidden = true; });
   menu.addEventListener('click', (e) => { const b = e.target.closest('button[data-exp]'); if (b) exportAs(b.dataset.exp); });
+  $('#btnInstallExt').addEventListener('click', () => track('abriu_guia_baixaai'));
 
   $('#speakers').addEventListener('click', (e) => { const c = e.target.closest('.spk-chip[data-spk]'); if (c) renameSpeaker(Number(c.dataset.spk), c); });
   $('#transcript').addEventListener('click', (e) => {
