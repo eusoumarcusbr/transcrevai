@@ -156,6 +156,29 @@ Resolve a pendência 1 (distribuição para outras pessoas).
 3. Quando sair o transformers.js v4.3.0, testar o q8 de novo no processador (é
    bem mais leve que o q4 para o mesmo tamanho de modelo).
 
+## Medição (Google Analytics 4)
+
+Propriedade G-58MW9KB4N6, na conta Pessoal do eusoumarcus. A tag entra nas duas
+páginas com `crossorigin="anonymous"`: sem isso o COEP `require-corp` bloqueia
+script de outro domínio. Testado no Chrome em 13/09/2026: o gtag carrega, o
+`crossOriginIsolated` continua true (o modo rápido não foi afetado) e os
+eventos aparecem no relatório em tempo real.
+
+Detalhe que engana: o leitor de rede da extensão do Chrome mostra 503 nas
+chamadas para `google-analytics.com/g/collect`. É leitura errada da ferramenta.
+Um `fetch` manual para a mesma URL devolve 204 e os eventos chegam no GA.
+
+Eventos: `transcricao_iniciada` (origem, domínio do link, qualidade, motor,
+falantes, idioma), `transcricao_concluida` (qualidade, motor, duração do áudio,
+tempo de processamento, falantes detectados), `transcricao_erro` (motivo em 90
+caracteres), `transcricao_cancelada`, `exportar` (formato, duração),
+`abriu_guia_baixaai`, `baixaai_download` e `baixaai_estado` (conectado, sem
+ajudante ou não instalado).
+
+Nunca vai para o GA: nome de arquivo, link completo e qualquer trecho do texto
+transcrito. O `track()` do `app.js` só dispara se o `gtag` existir, então o
+site funciona normalmente para quem bloqueia o Google.
+
 ## Repositório
 
 O código está versionado em https://github.com/eusoumarcusbr/transcrevai
