@@ -151,10 +151,24 @@ Resolve a pendência 1 (distribuição para outras pessoas).
 
 ## Pendências
 
-1. Avaliar (opcional) um VPS com yt-dlp para links sem extensão.
-2. Avaliar espelhar os modelos do Hugging Face no próprio Hostinger.
-3. Quando sair o transformers.js v4.3.0, testar o q8 de novo no processador (é
-   bem mais leve que o q4 para o mesmo tamanho de modelo).
+Nenhuma aberta. As três que existiam foram fechadas em 13 e 14/09/2026:
+o q8 no processador (feito), o espelho dos modelos (feito) e a VPS com yt-dlp
+(descartada, ver abaixo).
+
+## VPS com yt-dlp: descartada por ora (14/09/2026)
+
+A ideia era deixar links do YouTube e afins funcionarem sem a extensão BaixaAI,
+com um servidor rodando yt-dlp. Marcus tem uma VPS KVM 2 na Hostinger, então
+não haveria custo novo, mas a decisão foi não fazer agora.
+
+Por quê: a promessa da ferramenta deixaria de ser "nada sai do seu computador",
+o yt-dlp vira manutenção contínua (quebra quando o YouTube muda), e o YouTube
+costuma barrar IP de datacenter pedindo confirmação de que não é robô, o que
+pode inviabilizar o caso de uso principal.
+
+Se for retomar: testar primeiro, em 15 minutos, se o YouTube deixa a VPS baixar
+um vídeo. Só seguir se passar. E considerar deixar o serviço fechado por senha,
+só para a equipe da SECOM, em vez de público.
 
 ## Medição (Google Analytics 4)
 
