@@ -201,6 +201,16 @@ Com isso o processador voltou ao q8, que além de ser mais rápido é MENOR que 
 q4 nestes modelos: o decoder do base tem 51 MB em q8 contra 124 MB em q4. A
 cadeia de reserva no wasm é q8, depois q4, depois fp32.
 
+Armadilha que custou tempo: os arquivos do ONNX Runtime têm cache de 7 dias no
+`.htaccess` e a URL não mudava, então o navegador continuava rodando o runtime
+antigo depois da atualização e o q8 parecia quebrado mesmo com o 1.29 no
+servidor. Agora o `worker.js` põe `?v=` nessas URLs (constante `ORT_VER`).
+Ao trocar o vendor/ort de novo, subir esse número junto.
+
+Testado no site publicado em 13/09/2026: funciona na placa de vídeo (transcrição
+completa pela interface) e no processador (q8 abrindo de primeira, sem cair para
+a reserva).
+
 O script `test/testar-q8.sh` refaz o teste. Atenção: no Hugging Face o arquivo
 do q8 se chama `_quantized.onnx`, não `_q8.onnx`.
 
