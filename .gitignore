@@ -10,3 +10,5 @@ __pycache__/
 # testes e coisas temporárias
 test/media/
 *.log
+.q8/
+q8-resultado.txt

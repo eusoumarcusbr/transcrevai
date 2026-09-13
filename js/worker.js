@@ -8,11 +8,11 @@ import {
   AutoModelForAudioFrameClassification,
   AutoModel,
   AutoFeatureExtractor,
-} from '../vendor/transformers.min.js?v=6';
+} from '../vendor/transformers.min.js?v=9';
 import {
   Input, ALL_FORMATS, BlobSource, Output, WavOutputFormat, BufferTarget, Conversion,
-} from '../vendor/mediabunny.min.mjs?v=6';
-import * as dz from './diarize.js?v=6';
+} from '../vendor/mediabunny.min.mjs?v=9';
+import * as dz from './diarize.js?v=9';
 
 // ---------------------------------------------------------------------
 // Configuração do ONNX Runtime (arquivos .wasm servidos pelo próprio site)
@@ -36,12 +36,14 @@ env.backends.onnx.wasm.numThreads = self.crossOriginIsolated
 // 1,6 GB. Por isso as duas chaves aparecem sempre com o mesmo valor.
 const dt = (encoder, decoder) => ({ model: encoder, encoder_model: encoder, decoder_model_merged: decoder });
 
-// No processador (wasm) NÃO dá para usar o q8 destes modelos: o runtime v4 do
-// ONNX reescreve as contas para MatMulNBits e o arquivo q8 não traz as escalas
-// ("Missing required scale ... weight_merged_0_scale", issue 1707 do
-// transformers.js, prometido para a v4.3.0). Por isso o processador usa q4 e
-// fp32, que trazem as escalas. `reserva` é a cadeia de tentativas caso o
-// primeiro dtype falhe ao criar a sessão.
+// O q8 no processador (wasm) ficou bloqueado por um bug do ONNX Runtime até a
+// versão 1.26 ("Missing required scale ... weight_merged_0_scale", issue 1707
+// do transformers.js). Testado em 13/09/2026: corrigido a partir do ONNX
+// Runtime 1.27, e o vendor/ agora traz um bundle do transformers.js 4.2.0
+// montado com o 1.29. Por isso o processador volta ao q8, que além de rodar
+// mais rápido é MENOR que o q4 nestes modelos (o decoder do base tem 51 MB em
+// q8 contra 124 MB em q4). `reserva` é a cadeia de tentativas caso o primeiro
+// dtype falhe ao criar a sessão.
 export const MODELS = {
   turbo: {
     id: 'onnx-community/whisper-large-v3-turbo_timestamped',
@@ -49,15 +51,15 @@ export const MODELS = {
   },
   small: {
     id: 'onnx-community/whisper-small_timestamped',
-    dtype: { webgpu: dt('fp16', 'q4'), webgpu_nof16: dt('fp32', 'q4'), wasm: dt('q4', 'q4') },
-    reserva: { wasm: [dt('fp32', 'q4')] },
+    dtype: { webgpu: dt('fp16', 'q4'), webgpu_nof16: dt('fp32', 'q4'), wasm: dt('q8', 'q8') },
+    reserva: { wasm: [dt('q4', 'q4'), dt('fp32', 'q4')] },
   },
   base: {
     id: 'onnx-community/whisper-base_timestamped',
-    // no processador começa pelo q4 (uns 140 MB de memória): o fp32 estoura o
-    // limite do navegador do iPhone, que derruba a aba por volta de 1 GB
-    dtype: { webgpu: dt('fp32', 'q4'), webgpu_nof16: dt('fp32', 'q4'), wasm: dt('q4', 'q4') },
-    reserva: { wasm: [dt('fp32', 'q4'), dt('fp32', 'fp32')] },
+    // no processador começa pelo q8 (uns 75 MB): o fp32 estoura o limite do
+    // navegador do iPhone, que derruba a aba por volta de 1 GB
+    dtype: { webgpu: dt('fp32', 'q4'), webgpu_nof16: dt('fp32', 'q4'), wasm: dt('q8', 'q8') },
+    reserva: { wasm: [dt('q4', 'q4'), dt('fp32', 'q4')] },
   },
 };
 const SEG_MODEL = 'onnx-community/pyannote-segmentation-3.0';

@@ -179,6 +179,31 @@ Nunca vai para o GA: nome de arquivo, link completo e qualquer trecho do texto
 transcrito. O `track()` do `app.js` só dispara se o `gtag` existir, então o
 site funciona normalmente para quem bloqueia o Google.
 
+## Motor no processador: q8 liberado (13/09/2026)
+
+O q8 dos modelos `*_timestamped` quebrava no processador com
+"Missing required scale ... weight_merged_0_scale" (issue 1707 do
+transformers.js). Testado: o bug é do ONNX Runtime e foi corrigido a partir da
+versão 1.27. O transformers.js 4.2.0 traz o 1.26 embutido e não teve versão
+nova desde abril de 2026, então o `vendor/transformers.min.js` agora é um
+bundle próprio, montado com esbuild a partir do código-fonte do 4.2.0 e do
+onnxruntime-web 1.29.0. Os quatro arquivos de `vendor/ort/` também são do
+1.29.0.
+
+Para remontar o bundle: instalar `@huggingface/transformers@4.2.0`,
+`onnxruntime-web@1.29.0` e `esbuild` (com `--ignore-scripts`), e rodar esbuild
+sobre `src/transformers.js` com format esm, platform browser, apontando
+`onnxruntime-web` e `onnxruntime-web/webgpu` para
+`node_modules/onnxruntime-web/dist/ort.webgpu.bundle.min.mjs` e substituindo
+`onnxruntime-node`, `sharp` e os `node:*` por um stub vazio.
+
+Com isso o processador voltou ao q8, que além de ser mais rápido é MENOR que o
+q4 nestes modelos: o decoder do base tem 51 MB em q8 contra 124 MB em q4. A
+cadeia de reserva no wasm é q8, depois q4, depois fp32.
+
+O script `test/testar-q8.sh` refaz o teste. Atenção: no Hugging Face o arquivo
+do q8 se chama `_quantized.onnx`, não `_q8.onnx`.
+
 ## Repositório
 
 O código está versionado em https://github.com/eusoumarcusbr/transcrevai
