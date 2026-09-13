@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TranscrevAI · Transcrição no navegador</title>
+  <meta name="description" content="Transcreva vídeos, áudios e links com separação de falantes e timecode. Tudo roda no seu navegador.">
+  <meta name="theme-color" content="#0d0e11">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="pt_BR">
+  <meta property="og:site_name" content="TranscrevAI">
+  <meta property="og:url" content="https://eusoumarcus.com.br/transcrevai/">
+  <meta property="og:title" content="TranscrevAI: transcrição de vídeos, áudios e links">
+  <meta property="og:description" content="Texto com timecode e separação de falantes. Tudo roda no seu navegador, sem enviar arquivo para servidor nenhum.">
+  <meta property="og:image" content="https://eusoumarcus.com.br/transcrevai/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="1200">
+  <meta property="og:image:alt" content="TranscrevAI: vídeos, áudios e links viram texto no seu navegador">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="TranscrevAI: transcrição de vídeos, áudios e links">
+  <meta name="twitter:description" content="Texto com timecode e separação de falantes. Tudo roda no seu navegador, sem enviar arquivo para servidor nenhum.">
+  <meta name="twitter:image" content="https://eusoumarcus.com.br/transcrevai/og.png">
+  <link rel="stylesheet" href="css/app.css?v=7">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23E8341C'/%3E%3Cpath d='M16 34v-4M24 42V22M32 38V26M40 46V18M48 36v-8' stroke='white' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
+</head>
+<body>
+  <div class="shell">
+    <header class="top">
+      <a class="brand" href="./" aria-label="TranscrevAI: início">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+        <span class="brand-name">Transcrev<b>AI</b></span>
+      </a>
+      <div class="top-chips">
+        <span class="chip" id="chipEngine" title="Motor de processamento">Verificando…</span>
+        <span class="chip" id="chipExt" title="Extensão BaixaAI (links de YouTube, Instagram etc.)">BaixaAI…</span>
+        <a class="btn ghost sm" id="btnInstallExt" href="baixaai.html" hidden>Instalar o BaixaAI</a>
+        <button class="btn ghost sm" id="btnHistory" type="button">Histórico</button>
+      </div>
+    </header>
+
+    <!-- ============ ENTRADA ============ -->
+    <main id="viewInput" class="view">
+      <section class="hero">
+        <h1>Transcreva vídeos, áudios e links.</h1>
+        <p>Com timecode e separação de falantes. Tudo roda no seu computador: o arquivo não é enviado para nenhum servidor.</p>
+      </section>
+
+      <section class="card">
+        <div class="tabs" role="tablist">
+          <button class="tab active" role="tab" data-tab="file" aria-selected="true">Arquivo</button>
+          <button class="tab" role="tab" data-tab="link" aria-selected="false">Link</button>
+        </div>
+
+        <div class="tabpane" data-pane="file">
+          <label class="drop" id="drop">
+            <input type="file" id="fileInput" accept="audio/*,video/*,.mp3,.m4a,.wav,.ogg,.opus,.flac,.aac,.mp4,.mov,.mkv,.webm,.ts" hidden>
+            <span class="drop-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+            </span>
+            <span class="drop-title">Arraste o arquivo aqui ou <u>clique para escolher</u></span>
+            <span class="drop-sub">MP4, MOV, MKV, WEBM, MP3, M4A, WAV, OGG, FLAC</span>
+            <span class="drop-file" id="dropFile" hidden></span>
+          </label>
+        </div>
+
+        <div class="tabpane" data-pane="link" hidden>
+          <div class="field">
+            <label for="linkInput">Cole o link</label>
+            <input type="url" id="linkInput" placeholder="https://www.youtube.com/watch?v=…" autocomplete="off" spellcheck="false">
+          </div>
+          <p class="hint" id="linkHint">YouTube, Instagram, TikTok, Facebook e Globo usam a extensão BaixaAI. Links diretos de arquivo (.mp3, .mp4) funcionam sem ela.</p>
+        </div>
+
+        <div class="opts">
+          <div class="field">
+            <label for="optLang">Idioma</label>
+            <select id="optLang">
+              <option value="pt">Português</option>
+              <option value="auto">Detectar automaticamente</option>
+              <option value="en">Inglês</option>
+              <option value="es">Espanhol</option>
+              <option value="fr">Francês</option>
+              <option value="it">Italiano</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="optModel">Qualidade</label>
+            <select id="optModel"></select>
+          </div>
+          <div class="field">
+            <label for="optSpk">Separar falantes</label>
+            <select id="optSpk">
+              <option value="auto">Sim, detectar quantos</option>
+              <option value="2">Sim, 2 pessoas</option>
+              <option value="3">Sim, 3 pessoas</option>
+              <option value="4">Sim, 4 pessoas</option>
+              <option value="5">Sim, 5 pessoas</option>
+              <option value="6">Sim, 6 pessoas</option>
+              <option value="off">Não (1 pessoa ou narração)</option>
+            </select>
+          </div>
+        </div>
+        <p class="hint" id="modelHint"></p>
+
+        <div class="actions">
+          <button class="btn primary lg" id="btnStart" type="button" disabled>Transcrever</button>
+        </div>
+      </section>
+
+      <p class="foot">Na primeira vez o navegador baixa o modelo de IA (fica guardado para as próximas). Funciona melhor no Chrome ou Edge atualizados.<br>Para transcrever links do YouTube, Instagram, TikTok, Facebook e Globo, <a href="baixaai.html">instale o BaixaAI</a>.</p>
+    </main>
+
+    <!-- ============ PROCESSANDO ============ -->
+    <main id="viewWork" class="view" hidden>
+      <section class="card work">
+        <div class="work-head">
+          <div>
+            <p class="eyebrow">Transcrevendo</p>
+            <h2 id="workTitle"></h2>
+          </div>
+          <button class="btn ghost" id="btnCancel" type="button">Cancelar</button>
+        </div>
+        <ol class="steps" id="steps">
+          <li data-step="fetch" hidden><span class="dot"></span><span class="lbl">Baixando pelo BaixaAI</span><span class="val"></span></li>
+          <li data-step="decode"><span class="dot"></span><span class="lbl">Preparando o áudio</span><span class="val"></span></li>
+          <li data-step="models"><span class="dot"></span><span class="lbl">Carregando modelos de IA</span><span class="val"></span></li>
+          <li data-step="vad"><span class="dot"></span><span class="lbl">Encontrando as falas</span><span class="val"></span></li>
+          <li data-step="speakers"><span class="dot"></span><span class="lbl">Identificando quem fala</span><span class="val"></span></li>
+          <li data-step="asr"><span class="dot"></span><span class="lbl">Transcrevendo</span><span class="val"></span></li>
+        </ol>
+        <div class="bar"><div class="bar-fill" id="barFill"></div></div>
+        <p class="bar-text" id="barText">Preparando…</p>
+        <div class="live" id="live" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <!-- ============ RESULTADO ============ -->
+    <main id="viewResult" class="view" hidden>
+      <section class="card result-head">
+        <div class="rh-main">
+          <input class="title-input" id="docTitle" aria-label="Título da transcrição">
+          <p class="meta" id="docMeta"></p>
+        </div>
+        <div class="rh-actions">
+          <button class="btn ghost" id="btnCopy" type="button">Copiar texto</button>
+          <div class="menu-wrap">
+            <button class="btn primary" id="btnExport" type="button" aria-haspopup="true" aria-expanded="false">Exportar ▾</button>
+            <div class="menu" id="menuExport" hidden>
+              <button data-exp="txt">Texto corrido (.txt)</button>
+              <button data-exp="tc">Texto com timecode (.txt)</button>
+              <button data-exp="docx">Word (.docx)</button>
+              <button data-exp="srt">Legenda (.srt)</button>
+              <button data-exp="vtt">Legenda (.vtt)</button>
+              <button data-exp="json">Dados completos (.json)</button>
+            </div>
+          </div>
+          <button class="btn ghost" id="btnNew" type="button">Nova</button>
+        </div>
+      </section>
+
+      <section class="toolbar">
+        <div class="speakers" id="speakers"></div>
+        <label class="switch"><input type="checkbox" id="editMode"><span></span>Editar texto</label>
+      </section>
+
+      <section class="card transcript" id="transcript"></section>
+
+      <div class="player" id="player" hidden>
+        <audio id="audio" controls preload="metadata"></audio>
+      </div>
+      <p class="hint center" id="noAudioHint" hidden>Para ouvir junto com o texto, <button class="linkbtn" id="btnAttach" type="button">selecione o arquivo original</button>.</p>
+    </main>
+  </div>
+
+  <!-- Histórico -->
+  <aside class="drawer" id="drawer" hidden>
+    <div class="drawer-head">
+      <h3>Histórico</h3>
+      <button class="btn ghost sm" id="btnCloseDrawer" type="button">Fechar</button>
+    </div>
+    <p class="hint">Fica salvo só neste navegador.</p>
+    <ul class="hist" id="histList"></ul>
+  </aside>
+  <div class="scrim" id="scrim" hidden></div>
+  <input type="file" id="attachInput" accept="audio/*,video/*" hidden>
+
+  <div class="toast" id="toast" hidden></div>
+
+  <script type="module" src="js/app.js?v=7"></script>
+</body>
+</html>

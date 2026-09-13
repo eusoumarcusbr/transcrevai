@@ -1,0 +1,12 @@
+# metadados do macOS
+.DS_Store
+._*
+
+# ajudante do BaixaAI depois de instalado (caminhos da máquina de cada um)
+native-host/paths.json
+native-host/com.baixaai.host.json
+__pycache__/
+
+# testes e coisas temporárias
+test/media/
+*.log

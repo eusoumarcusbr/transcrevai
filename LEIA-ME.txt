@@ -1,0 +1,19 @@
+TranscrevAI · como publicar no Hostinger
+
+1. No Gerenciador de Arquivos do Hostinger, abra public_html do eusoumarcus.com.br.
+2. Envie o transcrevai.zip e extraia. Deve ficar: public_html/transcrevai/index.html
+3. Confirme que o arquivo .htaccess veio junto (é oculto; ele libera o modo rápido).
+4. Abra https://eusoumarcus.com.br/transcrevai/ no Chrome.
+
+Na primeira transcrição o navegador baixa o modelo de IA (de 80 MB a 1,6 GB,
+conforme a qualidade). Depois fica guardado.
+
+Links de YouTube/Instagram/TikTok/Facebook/Globo: precisam do BaixaAI 2.6.0
+(recarregar a extensão em chrome://extensions).
+
+Para outras pessoas, o site tem a página baixaai.html com o passo a passo e o
+baixaai.zip para download. Se a extensão mudar de versão, gere o zip de novo a
+partir de /Volumes/SSD_NVME/AgentesIA/BaixarVideos/baixaai.
+
+Ao enviar a pasta, não precisa subir os arquivos que começam com ._ (são
+metadados do macOS).
