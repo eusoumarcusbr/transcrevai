@@ -13,6 +13,10 @@
   <FilesMatch "\.(html|js|css)$">
     Header set Cache-Control "no-cache, must-revalidate"
   </FilesMatch>
+  # os modelos espelhados nunca mudam de conteúdo: cache longo
+  <FilesMatch "\.onnx$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
   # o zip da extensão BaixaAI: troca pouco, mas precisa revalidar quando troca
   <FilesMatch "\.zip$">
     Header set Cache-Control "public, max-age=3600, must-revalidate"
@@ -20,6 +24,7 @@
 </IfModule>
 <IfModule mod_mime.c>
   AddType application/zip .zip
+  AddType application/octet-stream .onnx
   AddType application/wasm .wasm
   AddType text/javascript .mjs .js
 </IfModule>

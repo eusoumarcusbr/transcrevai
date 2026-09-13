@@ -12,3 +12,6 @@ test/media/
 *.log
 .q8/
 q8-resultado.txt
+
+# espelho dos modelos (1,4 GB, fica só no servidor)
+modelos/

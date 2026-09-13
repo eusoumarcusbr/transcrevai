@@ -214,6 +214,28 @@ a reserva).
 O script `test/testar-q8.sh` refaz o teste. Atenção: no Hugging Face o arquivo
 do q8 se chama `_quantized.onnx`, não `_q8.onnx`.
 
+## Espelho dos modelos no Hostinger (14/09/2026)
+
+Por padrão o transformers.js baixa os modelos do huggingface.co, que rede
+corporativa costuma bloquear (caso provável no TCE). O `worker.js` agora
+procura `modelos/ok.txt` no próprio domínio: se existir, as qualidades Rápida
+e Equilibrada e os dois modelos de falante vêm daqui (`env.remoteHost` aponta
+para `modelos/` e `env.remotePathTemplate` vira `{model}/`). A Máxima continua
+vindo do Hugging Face, porque 1,6 GB é grande demais para espelhar. Se o
+espelho falhar no meio, a segunda rodada tenta tudo de novo direto no Hugging
+Face, então o site nunca fica pior do que era.
+
+O espelho tem cerca de 1,4 GB e a estrutura de pastas é a mesma do Hugging
+Face: `modelos/onnx-community/<modelo>/onnx/<arquivo>.onnx`.
+
+Quem baixa é o próprio servidor, pelo `baixar-modelos.php`: sobe o arquivo,
+abre com `?chave=transcrevai-2026`, a página recarrega sozinha baixando um
+arquivo por vez (para não estourar o tempo limite do PHP) e no fim grava o
+`modelos/ok.txt`. Depois o arquivo .php deve ser apagado do servidor. Rodar de
+novo é seguro: ele pula o que já está lá.
+
+A pasta `modelos/` está no .gitignore: existe só no servidor.
+
 ## Repositório
 
 O código está versionado em https://github.com/eusoumarcusbr/transcrevai

@@ -8,11 +8,11 @@ import {
   AutoModelForAudioFrameClassification,
   AutoModel,
   AutoFeatureExtractor,
-} from '../vendor/transformers.min.js?v=9';
+} from '../vendor/transformers.min.js?v=10';
 import {
   Input, ALL_FORMATS, BlobSource, Output, WavOutputFormat, BufferTarget, Conversion,
-} from '../vendor/mediabunny.min.mjs?v=9';
-import * as dz from './diarize.js?v=9';
+} from '../vendor/mediabunny.min.mjs?v=10';
+import * as dz from './diarize.js?v=10';
 
 // ---------------------------------------------------------------------
 // Configuração do ONNX Runtime (arquivos .wasm servidos pelo próprio site)
@@ -20,7 +20,7 @@ import * as dz from './diarize.js?v=9';
 // A versão vai na URL dos arquivos do ONNX Runtime porque eles têm cache de 7
 // dias no .htaccess: sem isso, quem já visitou o site continua rodando o .wasm
 // antigo depois de uma atualização (foi o que escondeu a correção do q8).
-const ORT_VER = '9';
+const ORT_VER = '10';
 const ORT_BASE = new URL('../vendor/ort/', import.meta.url).href;
 const IS_SAFARI = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 env.allowLocalModels = false;
@@ -31,6 +31,40 @@ env.backends.onnx.wasm.wasmPaths = IS_SAFARI
 env.backends.onnx.wasm.numThreads = self.crossOriginIsolated
   ? Math.max(1, Math.min(8, (navigator.hardwareConcurrency || 4) - 1))
   : 1;
+
+// ---------------------------------------------------------------------
+// Espelho dos modelos no próprio domínio
+// ---------------------------------------------------------------------
+// Por padrão o transformers.js baixa os modelos do huggingface.co, que rede
+// corporativa costuma bloquear. Se a pasta modelos/ existir neste servidor
+// (o arquivo ok.txt é a marca de que o espelho está completo), as qualidades
+// Rápida e Equilibrada e os modelos de falante vêm daqui. A Máxima continua
+// vindo do Hugging Face, porque é grande demais para espelhar.
+const ESPELHO = new URL('../modelos/', import.meta.url).href;
+const HF_HOST = 'https://huggingface.co/';
+const NO_ESPELHO = new Set(['base', 'small']);
+let temEspelho = null;
+
+async function checarEspelho() {
+  if (temEspelho !== null) return temEspelho;
+  try {
+    const r = await fetch(ESPELHO + 'ok.txt', { cache: 'no-store' });
+    temEspelho = r.ok;
+  } catch {
+    temEspelho = false;
+  }
+  return temEspelho;
+}
+
+function fonte(usarEspelho) {
+  if (usarEspelho) {
+    env.remoteHost = ESPELHO;
+    env.remotePathTemplate = '{model}/';
+  } else {
+    env.remoteHost = HF_HOST;
+    env.remotePathTemplate = '{model}/resolve/{revision}/';
+  }
+}
 
 // Atenção ao nome das chaves de dtype: o transformers.js usa DUAS chaves para o
 // mesmo arquivo do encoder. Na hora de criar a sessão ele procura por
@@ -170,12 +204,14 @@ function progressCb(label) {
 
 async function loadModels({ modelKey, device, f16, diarize }) {
   const spec = MODELS[modelKey];
+  const espelho = await checarEspelho();
   const dkey = device === 'webgpu' ? (f16 ? 'webgpu' : 'webgpu_nof16') : 'wasm';
   const dtype = spec.dtype[dkey] || spec.dtype.wasm;
   const asrKey = `${spec.id}|${device}|${JSON.stringify(dtype)}`;
 
   if (!loaded.seg) {
     post('status', { step: 'models', text: 'Detector de fala' });
+    fonte(espelho);
     loaded.seg = await AutoModelForAudioFrameClassification.from_pretrained(SEG_MODEL, {
       device: 'wasm', dtype: 'fp32', progress_callback: progressCb('Detector de fala'),
     });
@@ -184,6 +220,7 @@ async function loadModels({ modelKey, device, f16, diarize }) {
   checkCancel();
   if (diarize && !loaded.emb) {
     post('status', { step: 'models', text: 'Reconhecimento de voz' });
+    fonte(espelho);
     loaded.emb = await AutoModel.from_pretrained(EMB_MODEL, {
       device: 'wasm', dtype: 'fp32', progress_callback: progressCb('Reconhecimento de voz'),
     });
@@ -203,21 +240,29 @@ async function loadModels({ modelKey, device, f16, diarize }) {
       tentativas.push({ device: 'wasm', dtype: spec.dtype.wasm });
       for (const d of spec.reserva?.wasm || []) tentativas.push({ device: 'wasm', dtype: d });
     }
+    // a Máxima não está espelhada; e se o espelho falhar por qualquer motivo,
+    // a segunda rodada tenta tudo de novo direto no Hugging Face
+    const fontes = espelho && NO_ESPELHO.has(modelKey) ? [true, false] : [false];
     let erro = null;
-    for (const t of tentativas) {
-      if (!t.dtype) continue;
-      try {
-        loaded.asr = await pipeline('automatic-speech-recognition', spec.id, {
-          device: t.device, dtype: t.dtype, progress_callback: progressCb('Whisper'),
-        });
-        erro = null;
-        break;
-      } catch (err) {
-        if (err.message === '__cancelled__') throw err;
-        console.warn('falhou com', t, err);
-        erro = err;
-        post('status', { step: 'models', text: 'Whisper (outra versão)' });
+    for (const usar of fontes) {
+      fonte(usar);
+      erro = null;
+      for (const t of tentativas) {
+        if (!t.dtype) continue;
+        try {
+          loaded.asr = await pipeline('automatic-speech-recognition', spec.id, {
+            device: t.device, dtype: t.dtype, progress_callback: progressCb('Whisper'),
+          });
+          erro = null;
+          break;
+        } catch (err) {
+          if (err.message === '__cancelled__') throw err;
+          console.warn('falhou com', t, err);
+          erro = err;
+          post('status', { step: 'models', text: 'Whisper (outra versão)' });
+        }
       }
+      if (!erro) break;
     }
     if (erro) {
       // mostra o que foi tentado: ajuda a diagnosticar sem abrir o console

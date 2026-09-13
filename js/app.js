@@ -245,7 +245,7 @@ function setOverall(frac, text) {
 
 function ensureWorker() {
   if (state.worker) return state.worker;
-  const w = new Worker(new URL('./worker.js?v=9', import.meta.url), { type: 'module' });
+  const w = new Worker(new URL('./worker.js?v=10', import.meta.url), { type: 'module' });
   w.onmessage = (e) => onWorkerMessage(e.data);
   w.onerror = (e) => {
     console.error(e);
