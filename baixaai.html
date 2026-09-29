@@ -111,7 +111,7 @@
       <div class="guide">
         <section class="card passo">
           <h2>Baixe e descompacte</h2>
-          <p>São uns 30 KB. Depois de descompactar, guarde a pasta <b>baixaai</b> num lugar definitivo, como Documentos. Se você apagar ou mover essa pasta depois, o complemento para de funcionar.</p>
+          <p>São uns 30 KB. Depois de descompactar, guarde a pasta <b>baixaai</b> direto na sua pasta pessoal (no Mac: <kbd>Ir → Pasta Pessoal</kbd> no Finder, ou ⌘⇧H). <b>Não</b> deixe ela dentro de Área de Trabalho, Documentos ou Downloads — o macOS bloqueia essas pastas e o ajudante do passo 3 não funciona. Se você apagar ou mover essa pasta depois, o complemento também para de funcionar.</p>
           <div class="dl">
             <a class="btn primary lg" href="baixaai.zip" download>Baixar o BaixaAI (.zip)</a>
             <span class="hint" style="margin:0">Funciona no Chrome e no Edge, no Mac e no Windows.</span>
@@ -140,11 +140,12 @@
           <div data-pane="mac">
             <p class="plain">Abra o <b>Terminal</b> e cole as duas linhas abaixo, uma de cada vez. Troque o caminho pelo lugar onde você guardou a pasta.</p>
             <div class="cmd">
-              <pre>cd ~/Documents/baixaai/native-host
+              <pre>cd ~/baixaai/native-host
 bash install.sh</pre>
               <button class="btn ghost sm copy" type="button">Copiar</button>
             </div>
-            <p class="hint">Dica: em vez de digitar o caminho, escreva <code>cd</code>, dê um espaço e arraste a pasta <b>native-host</b> para dentro do Terminal. O script demora um pouco: ele instala o yt-dlp e o ffmpeg e registra o ajudante no Chrome. Precisa de Python 3, que o Mac já traz.</p>
+            <p class="hint">Dica: em vez de digitar o caminho, escreva <code>cd</code>, dê um espaço e arraste a pasta <b>native-host</b> para dentro do Terminal. O script cuida de tudo sozinho — Homebrew, Python, yt-dlp e ffmpeg — mesmo que seu Mac nunca tenha tido nada de desenvolvedor instalado antes. Pode pedir a senha do Mac no meio do caminho (é normal) e, na primeira vez, demorar uns 15-20 minutos.</p>
+            <p class="hint">Prefere passo a passo com print? <a href="baixaai-guia-mac.pdf" target="_blank" rel="noopener">Baixe o guia em PDF (Mac)</a>.</p>
           </div>
 
           <div data-pane="win" hidden>
@@ -155,6 +156,7 @@ bash install.sh</pre>
               <button class="btn ghost sm copy" type="button">Copiar</button>
             </div>
             <p class="hint">O script instala o yt-dlp, o ffmpeg e registra o ajudante no Chrome. O suporte a Windows é recente e foi menos testado que o do Mac.</p>
+            <p class="hint">Prefere passo a passo com print? <a href="baixaai-guia-windows.pdf" target="_blank" rel="noopener">Baixe o guia em PDF (Windows)</a>.</p>
           </div>
         </section>
 
@@ -176,8 +178,13 @@ bash install.sh</pre>
           </details>
 
           <details>
-            <summary>A pasta está num HD ou SSD externo (Mac)</summary>
-            <p>O macOS costuma bloquear o Chrome de executar programas em volumes externos, e aparece "Native host has exited". Mova pelo menos a pasta <b>native-host</b> para dentro da sua pasta pessoal e rode o <code>install.sh</code> de lá.</p>
+            <summary>Apareceu "Native host has exited" (Mac)</summary>
+            <p>A pasta <b>baixaai</b> está dentro de Área de Trabalho, Documentos, Downloads, ou num HD/SSD externo — o macOS bloqueia essas pastas silenciosamente. Mova a pasta inteira pra dentro da sua pasta pessoal (⌘⇧H no Finder) e rode <code>bash install.sh</code> de novo a partir de lá.</p>
+          </details>
+
+          <details>
+            <summary>Apareceu "externally-managed-environment" no Terminal (Mac)</summary>
+            <p>O <code>install.sh</code> já contorna isso sozinho na maioria dos casos. Se persistir, rode de novo o mesmo comando do passo 3 — costuma resolver na segunda tentativa.</p>
           </details>
 
           <details>

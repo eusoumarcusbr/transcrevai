@@ -149,11 +149,45 @@ Resolve a pendência 1 (distribuição para outras pessoas).
 - `.htaccess`: MIME e cache do `.zip`.
 - Todos os arquivos passaram para `?v=7`.
 
+## Corrigido em 29/09/2026: baixaai.html desatualizado + zip parado no v2.6.0
+
+A página `baixaai.html` mandava guardar a pasta `baixaai` em **Documentos**
+e o comando do Mac era `cd ~/Documents/baixaai/native-host` — exatamente o
+bug de TCC (macOS bloqueia Chrome/bash de rodar programas dentro de Área de
+Trabalho, Documentos e Downloads) descoberto na instalação real de outra
+pessoa em 28-29/09/2026 (ver decisão #21 e história #23 no `CONTEXTO.md` do
+BaixaAI). Corrigido:
+
+- Passo 1: agora orienta guardar a pasta na pasta pessoal (⌘⇧H), com aviso
+  explícito para não usar Área de Trabalho/Documentos/Downloads.
+- Comando do Mac: `cd ~/baixaai/native-host` (sem `Documents/`).
+- Texto do passo 3 (Mac): trocado "Precisa de Python 3, que o Mac já traz"
+  pela explicação real — o `install.sh` agora instala Homebrew e Python
+  sozinho, pode pedir senha do Mac e levar até 15-20 min na primeira vez.
+- "Se der problema": o item de HD/SSD externo virou "Native host has
+  exited", cobrindo também Documentos/Downloads/Área de Trabalho, e foi
+  adicionado um item para `externally-managed-environment`.
+- Dois links novos para os guias em PDF (`baixaai-guia-mac.pdf` e
+  `baixaai-guia-windows.pdf`, copiados da mesma sessão que gerou os PDFs do
+  repositório do BaixaAI).
+- `baixaai.zip` estava parado em 13/09 (v2.6.0-ish, sem o `install.sh`
+  blindado). Regerado via `git archive --prefix=baixaai/` a partir do HEAD
+  do repositório `baixaai` (v2.6.2, commit `45c53a7`), excluindo só o
+  `CONTEXTO.md` — o `.gitignore` do próprio repositório já cuida de excluir
+  `paths.json`, `run_host.sh`/`.bat`, `__pycache__` e os `._*`.
+
+**Pendente:** essas mudanças estão só na pasta local / no repositório git —
+o Hostinger é publicação manual (ver `LEIA-ME.txt`). Precisa subir de novo
+a pasta (ou pelo menos `baixaai.html`, `baixaai.zip`,
+`baixaai-guia-mac.pdf` e `baixaai-guia-windows.pdf`) pelo Gerenciador de
+Arquivos para o `public_html/transcrevai` valer no site publicado.
+
 ## Pendências
 
-Nenhuma aberta. As três que existiam foram fechadas em 13 e 14/09/2026:
-o q8 no processador (feito), o espelho dos modelos (feito) e a VPS com yt-dlp
-(descartada, ver abaixo).
+Nenhuma aberta no código. Falta publicar a correção acima no Hostinger (ver
+seção logo acima). As três pendências antigas foram fechadas em 13 e
+14/09/2026: o q8 no processador (feito), o espelho dos modelos (feito) e a
+VPS com yt-dlp (descartada, ver abaixo).
 
 ## VPS com yt-dlp: descartada por ora (14/09/2026)
 
